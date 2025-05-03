@@ -186,7 +186,7 @@ A aplicação já possui um Dockerfile, que define como a aplicação deve ser c
 ### Dependências
 - ruby 3.3.1
 - rails 7.1.3.2
-- postgres 16 *psql 16.8*
+- postgres 16 *psql 16.8* -> gem 1.5
 - redis 7.0.15
 
 ### Como executar o projeto
