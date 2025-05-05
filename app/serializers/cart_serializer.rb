@@ -2,18 +2,18 @@ class CartSerializer < ActiveModel::Serializer
   attributes :id, :products, :total_price
 
   def products
-    object.cart_items.includes(:product).map do |item|
-      price = item.product.price
+    object.cart_items.map do |item|
       {
         id: item.product.id,
+        name: item.product.name,
         quantity: item.quantity,
-        unit_price: price,
-        total_price: (price * item.quantity).round(2)
+        unit_price: item.unit_price,
+        total_price: item.total_price
       }
     end
   end
 
   def total_price
-    products.sum { |p| p[:total_price] }.round(2)
+    object.total_price
   end
 end
