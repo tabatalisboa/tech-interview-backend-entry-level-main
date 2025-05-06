@@ -11,4 +11,9 @@ class CartItem < ApplicationRecord
   def total_price
     unit_price * quantity
   end
+
+  def increase_quantity(amount)
+    self.quantity += amount
+    save
+  end
 end

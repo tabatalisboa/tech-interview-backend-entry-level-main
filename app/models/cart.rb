@@ -6,6 +6,5 @@ class Cart < ApplicationRecord
 
   def total_price
     cart_items.includes(:product).sum { |item| item.total_price }
-    # cart_items.sum(&:total_price)
   end
 end

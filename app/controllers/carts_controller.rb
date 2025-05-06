@@ -11,7 +11,7 @@ class CartsController < ApplicationController
       @cart.cart_items.create(product: product, quantity: params[:quantity])
     end
 
-    render json: @cart, serializer: CartSerializer
+    render json: @cart, serializer: CartSerializerc
   end
 
   def show
@@ -20,10 +20,10 @@ class CartsController < ApplicationController
 
   def add_item
     product = Product.find(params[:product_id])
-    cart_item = @cart.cart_items.find_by(product: product)
-
-    if cart_item
-      cart_item.update(quantity: params[:quantity])
+    item_in_cart = @cart.cart_items.find_by(product: product)
+    
+    if item_in_cart
+      item_in_cart.increase_quantity(amount: params[:quantity]) 
     else
       @cart.cart_items.create(product: product, quantity: params[:quantity])
     end
@@ -43,10 +43,11 @@ class CartsController < ApplicationController
   end
 
   private
-
   def set_cart
-    @cart = Cart.find_by(id: session[:cart_id])
-
+    
+    cart_id = params[:cart_id] || session[:cart_id]
+    @cart = Cart.find_by(id: cart_id)
+  
     unless @cart
       @cart = Cart.create
       session[:cart_id] = @cart.id
