@@ -21,7 +21,6 @@ class CartsController < ApplicationController
   def add_item
     product = Product.find(params[:product_id])
     item_in_cart = @cart.cart_items.find_by(product: product)
-    byebug
     if item_in_cart
       item_in_cart.increase_quantity(params[:quantity]) # item_in_cart.update(quantity: item_in_cart.quantity + params[:quantity].to_i) 
     else
@@ -45,9 +44,7 @@ class CartsController < ApplicationController
   private
   def set_cart
     cart_id = params[:cart_id] || session[:cart_id]
-    byebug
     @cart = Cart.find_by(id: cart_id)
-    byebug
     unless @cart
       @cart = Cart.create
       session[:cart_id] = @cart.id
