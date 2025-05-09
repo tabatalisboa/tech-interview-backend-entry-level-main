@@ -1,53 +1,33 @@
 class CartsController < ApplicationController
-  before_action :set_cart
-
-  def create
-    product = Product.find(params[:product_id])
-    cart_item = @cart.cart_items.find_by(product: product)
-
-    if cart_item
-      cart_item.update(quantity: cart_item.quantity + params[:quantity].to_i)
-    else
-      @cart.cart_items.create(product: product, quantity: params[:quantity])
-    end
-
-    render json: @cart, serializer: CartSerializerc
-  end
-
-  def show
-    render json: @cart, serializer: CartSerializer
-  end
-
   def add_item
+    cart = current_cart
     product = Product.find(params[:product_id])
-    item_in_cart = @cart.cart_items.find_by(product: product)
-    if item_in_cart
-      item_in_cart.increase_quantity(params[:quantity]) # item_in_cart.update(quantity: item_in_cart.quantity + params[:quantity].to_i) 
-    else
-      @cart.cart_items.create(product: product, quantity: params[:quantity])
-    end
+    quantity = params[:quantity].to_i
 
-    render json: @cart, serializer: CartSerializer
-  end
+    item = cart.cart_items.find_or_initialize_by(product_id: product.id)
+    item.quantity += quantity
+    item.save!
 
-  def remove_item
-    cart_item = @cart.cart_items.find_by(product_id: params[:product_id])
+    cart.update!(total_price: calculate_total_price(cart))
 
-    if cart_item
-      cart_item.destroy
-      render json: @cart, serializer: CartSerializer
-    else
-      render json: { error: 'Produto não encontrado no carrinho.' }, status: :not_found
-    end
+    render json: cart, serializer: CartSerializer
   end
 
   private
-  def set_cart
-    cart_id = params[:cart_id] || session[:cart_id]
-    @cart = Cart.find_by(id: cart_id)
-    unless @cart
-      @cart = Cart.create
-      session[:cart_id] = @cart.id
+
+  def current_cart
+    if session[:cart_id]
+      Cart.find_by(id: session[:cart_id])
+    elsif (item = CartItem.find_by(product_id: params[:product_id]))
+      item.cart
+    else
+      cart = Cart.create!(total_price: 0)
+      session[:cart_id] = cart.id
+      cart
     end
+  end
+
+  def calculate_total_price(cart)
+    cart.cart_items.includes(:product).sum { |item| item.quantity * item.product.price }
   end
 end
