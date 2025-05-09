@@ -1,4 +1,24 @@
+# app/controllers/carts_controller.rb
 class CartsController < ApplicationController
+  def create
+    cart = current_cart
+    product = Product.find(params[:product_id])
+    quantity = params[:quantity].to_i
+
+    item = cart.cart_items.find_or_initialize_by(product_id: product.id)
+    item.quantity += quantity
+    item.save!
+
+    cart.update!(total_price: calculate_total_price(cart))
+
+    render json: cart, serializer: CartSerializer
+  end
+
+  def show
+    cart = current_cart
+    render json: cart, serializer: CartSerializer
+  end
+
   def add_item
     cart = current_cart
     product = Product.find(params[:product_id])
@@ -7,6 +27,17 @@ class CartsController < ApplicationController
     item = cart.cart_items.find_or_initialize_by(product_id: product.id)
     item.quantity += quantity
     item.save!
+
+    cart.update!(total_price: calculate_total_price(cart))
+
+    render json: cart, serializer: CartSerializer
+  end
+
+  def remove_item
+    cart = current_cart
+    product = Product.find(params[:product_id])
+    item = cart.cart_items.find_by(product_id: product.id)
+    item.destroy if item
 
     cart.update!(total_price: calculate_total_price(cart))
 
